@@ -53,6 +53,22 @@ public sealed record GpoPermissionEntry
     public bool IsInherited { get; init; }
 }
 
+/// <summary>
+/// A Group Policy Preferences file that stores a credential. The value is never retained: only
+/// the location and the element are recorded, which is all a finding needs.
+/// </summary>
+public sealed record GpoPreferencePasswordArtifact
+{
+    /// <summary>SYSVOL-relative path of the preferences file.</summary>
+    public required string RelativePath { get; init; }
+
+    /// <summary>Preference element carrying the credential, for example <c>Groups/User</c>.</summary>
+    public required string Element { get; init; }
+
+    /// <summary>Account name the credential belongs to, when the file names one.</summary>
+    public string? AccountName { get; init; }
+}
+
 /// <summary>A normalised Group Policy object combining directory metadata and SYSVOL content.</summary>
 public sealed record GroupPolicyObject
 {
@@ -81,6 +97,12 @@ public sealed record GroupPolicyObject
     public IReadOnlyList<RegistryPolicySetting> RegistrySettings { get; init; } = [];
     public IReadOnlyList<SecurityTemplateSetting> SecuritySettings { get; init; } = [];
     public IReadOnlyList<GpoPermissionEntry> Permissions { get; init; } = [];
+
+    /// <summary>
+    /// Group Policy Preferences files in SYSVOL that carry a <c>cpassword</c> attribute. Only the
+    /// file path and attribute name are recorded: the obfuscated value itself is never stored.
+    /// </summary>
+    public IReadOnlyList<GpoPreferencePasswordArtifact> PreferencePasswords { get; init; } = [];
 
     /// <summary>True when the GPO has no enabled link anywhere in the forest.</summary>
     public bool IsUnlinked => Links.Count == 0 || Links.All(link => !link.LinkEnabled);
