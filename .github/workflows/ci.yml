@@ -1,0 +1,94 @@
+name: Build and test
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+  CI: true
+
+jobs:
+  build:
+    name: Build and test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # The same suite runs on both supported platforms, because equivalent results across them
+        # is an acceptance criterion rather than an assumption.
+        os: [ubuntu-24.04, windows-2022]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore IdentityPostureAssessor.slnx
+
+      - name: Build
+        run: dotnet build IdentityPostureAssessor.slnx --configuration Release --no-restore
+
+      - name: Install the browser used for report rendering
+        shell: bash
+        run: |
+          # The rendering tests exercise the real browser rather than skipping it.
+          pwsh tests/Ipa.Reporting.Tests/bin/Release/net10.0/playwright.ps1 install chromium --with-deps
+
+      - name: Test
+        run: >
+          dotnet test IdentityPostureAssessor.slnx --configuration Release --no-build
+          --logger "trx;LogFileName=results-${{ matrix.os }}.trx"
+          --results-directory artifacts/test-results
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: artifacts/test-results
+
+      - name: Confirm the rule catalogue is current
+        shell: bash
+        run: |
+          # The catalogue is generated from the pack, so a stale document fails the build.
+          git diff --exit-code docs/rules.md
+
+  sample-report:
+    name: Render a sample report
+    runs-on: ubuntu-24.04
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build
+        run: dotnet build IdentityPostureAssessor.slnx --configuration Release
+
+      - name: Install the browser
+        run: pwsh tests/Ipa.Reporting.Tests/bin/Release/net10.0/playwright.ps1 install chromium --with-deps
+
+      - name: Render
+        env:
+          IPA_SAMPLE_REPORT_DIR: artifacts/sample-report
+        run: >
+          dotnet test tests/Ipa.Reporting.Tests --configuration Release --no-build
+          --filter SampleReportIsWrittenWhenRequested
+
+      - name: Upload the sample for visual inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: sample-report
+          path: artifacts/sample-report
