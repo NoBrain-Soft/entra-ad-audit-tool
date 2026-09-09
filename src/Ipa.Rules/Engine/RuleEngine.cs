@@ -64,9 +64,30 @@ public sealed class RuleEngine
                 continue;
             }
 
-            if (!options.SelectedGroups.Contains(definition.Group)
-                || !options.ActiveDomains.Contains(definition.Domain))
+            if (!options.ActiveDomains.Contains(definition.Domain))
             {
+                // The rule's source is not part of this assessment at all, so the rule does not
+                // apply and is excluded from the score entirely. Counting it as uncollected would
+                // depress the coverage of an assessment that was never meant to cover that source.
+                results.Add(new RuleResult
+                {
+                    RuleId = definition.Id,
+                    RuleVersion = definition.Version,
+                    Status = RuleStatus.NotApplicable,
+                    EvaluatedAt = evidence.ReferenceTime,
+                    Rationale = definition.Domain == RuleDomain.Hybrid
+                        ? "Hybrid rules require both an Active Directory forest and an Entra tenant. " +
+                          "Only one source was connected, so the hybrid score is disabled."
+                        : $"The {definition.Domain} source was not connected for this assessment.",
+                });
+
+                continue;
+            }
+
+            if (!options.SelectedGroups.Contains(definition.Group))
+            {
+                // The source is connected but the operator deselected this group, so the rule is
+                // uncollected: it reduces coverage, which is what makes a partial scan visible.
                 results.Add(new RuleResult
                 {
                     RuleId = definition.Id,
@@ -74,9 +95,7 @@ public sealed class RuleEngine
                     Status = RuleStatus.NotCollected,
                     EvaluatedAt = evidence.ReferenceTime,
                     Availability = EvidenceAvailability.NotSelected,
-                    Rationale = options.ActiveDomains.Contains(definition.Domain)
-                        ? $"The {definition.Group} check group was not selected for this assessment."
-                        : $"The {definition.Domain} source was not connected for this assessment.",
+                    Rationale = $"The {definition.Group} check group was not selected for this assessment.",
                 });
 
                 continue;

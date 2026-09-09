@@ -58,17 +58,20 @@ public sealed class ScoringEngine
 
         var overall = Aggregate("Overall", scorable);
 
+        // A scope in which every rule was excluded as not applicable produces no score at all,
+        // rather than an empty one. That is how an Active-Directory-only assessment reports its
+        // hybrid score as disabled instead of as zero.
         var byDomain = scorable
             .GroupBy(item => item.Definition.Domain)
-            .ToDictionary(
-                group => group.Key,
-                group => Aggregate(group.Key.ToString(), group.ToList()));
+            .Select(group => (group.Key, Score: Aggregate(group.Key.ToString(), group.ToList())))
+            .Where(entry => IsInScope(entry.Score))
+            .ToDictionary(entry => entry.Key, entry => entry.Score);
 
         var byGroup = scorable
             .GroupBy(item => item.Definition.Group)
-            .ToDictionary(
-                group => group.Key,
-                group => Aggregate(group.Key.ToString(), group.ToList()));
+            .Select(group => (group.Key, Score: Aggregate(group.Key.ToString(), group.ToList())))
+            .Where(entry => IsInScope(entry.Score))
+            .ToDictionary(entry => entry.Key, entry => entry.Score);
 
         return new PostureScoreSet
         {
@@ -102,6 +105,13 @@ public sealed class ScoringEngine
                 },
         };
     }
+
+    /// <summary>
+    /// True when a scope contributed something to the assessment. A scope whose rules were all
+    /// excluded as not applicable was never in scope, so it is omitted rather than shown as empty.
+    /// </summary>
+    private static bool IsInScope(PostureScore score) =>
+        score.EvaluatedWeight > 0 || score.NotCollectedWeight > 0 || score.ErrorWeight > 0;
 
     private static PostureScore Aggregate(string scope, IReadOnlyCollection<ScorableResult> items)
     {
