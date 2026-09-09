@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ipa.Desktop.ViewModels"
+             x:Class="Ipa.Desktop.Views.CollectionView"
+             x:DataType="vm:CollectionViewModel">
+
+  <StackPanel Spacing="12" MaxWidth="1000" HorizontalAlignment="Left">
+
+    <Border Classes="card">
+      <StackPanel Spacing="8">
+        <TextBlock Text="{Binding CurrentActivity}" FontWeight="SemiBold" />
+        <ProgressBar Value="{Binding OverallProgress}" Maximum="1" Height="8" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button Content="Start collection" Command="{Binding CollectCommand}"
+                  IsEnabled="{Binding !IsCollecting}" />
+          <Button Content="Cancel" Command="{Binding CancelCommand}" IsEnabled="{Binding IsCollecting}" />
+          <Button Content="Rerun failed collectors" Command="{Binding RerunFailedCommand}"
+                  IsEnabled="{Binding HasFailures}" />
+          <Button Content="Evaluate collected evidence" Command="{Binding EvaluateCommand}"
+                  IsEnabled="{Binding !IsCollecting}" />
+        </StackPanel>
+        <TextBlock Classes="muted"
+                   Text="Cancelling keeps the evidence collected so far. Rules whose evidence is missing report as not collected rather than as passing." />
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card">
+      <StackPanel Spacing="6">
+        <TextBlock Classes="subheading" Text="Collectors" />
+        <ItemsControl ItemsSource="{Binding Collectors}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:CollectorProgressViewModel">
+              <Grid ColumnDefinitions="240,*,120,Auto" Margin="0,4">
+                <TextBlock Grid.Column="0" Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Margin="8,0">
+                  <TextBlock Text="{Binding Activity}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                  <ProgressBar Value="{Binding Fraction}" Maximum="1" Height="5" Margin="0,3,0,0" />
+                </StackPanel>
+                <TextBlock Grid.Column="2" Text="{Binding Outcome}" VerticalAlignment="Center" />
+                <Button Grid.Column="3" Content="Rerun" IsVisible="{Binding CanRerun}"
+                        Command="{Binding $parent[ItemsControl].((vm:CollectionViewModel)DataContext).RerunFailedCommand}" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card">
+      <StackPanel Spacing="6">
+        <TextBlock Classes="subheading" Text="Collection diagnostics" />
+        <TextBlock Classes="muted"
+                   Text="Credentials, tokens and sensitive directory attributes are removed from these messages before they are recorded." />
+        <DataGrid ItemsSource="{Binding Diagnostics}" AutoGenerateColumns="False" IsReadOnly="True"
+                  MaxHeight="300" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Time" Binding="{Binding Timestamp}" Width="150" />
+            <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="100" />
+            <DataGridTextColumn Header="Collector" Binding="{Binding CollectorId}" Width="170" />
+            <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </StackPanel>
+    </Border>
+
+    <TextBlock Text="{Binding StatusMessage}" Foreground="#2F6B4F" TextWrapping="Wrap"
+               IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    <TextBlock Text="{Binding ErrorMessage}" Foreground="#A4243B" TextWrapping="Wrap"
+               IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+  </StackPanel>
+</UserControl>

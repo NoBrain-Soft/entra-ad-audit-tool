@@ -1,0 +1,100 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ipa.Desktop.ViewModels"
+             x:Class="Ipa.Desktop.Views.ReportView"
+             x:DataType="vm:ReportViewModel">
+
+  <StackPanel Spacing="12" MaxWidth="1000" HorizontalAlignment="Left">
+
+    <Border Classes="card">
+      <StackPanel Spacing="8">
+        <TextBlock Classes="subheading" Text="White label" />
+        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto">
+          <TextBox Grid.Row="0" Grid.Column="0" Margin="0,0,6,6" PlaceholderText="Customer name"
+                   Text="{Binding CustomerName}" />
+          <TextBox Grid.Row="0" Grid.Column="1" Margin="6,0,0,6" PlaceholderText="Assessor name"
+                   Text="{Binding AssessorName}" />
+          <TextBox Grid.Row="1" Grid.Column="0" Margin="0,0,6,6" PlaceholderText="Assessor company"
+                   Text="{Binding AssessorCompany}" />
+          <TextBox Grid.Row="1" Grid.Column="1" Margin="6,0,0,6" PlaceholderText="Product name override"
+                   Text="{Binding ProductNameOverride}" />
+          <TextBox Grid.Row="2" Grid.Column="0" Margin="0,0,6,6" PlaceholderText="Primary colour (#rrggbb)"
+                   Text="{Binding PrimaryColor}" />
+          <TextBox Grid.Row="2" Grid.Column="1" Margin="6,0,0,6" PlaceholderText="Secondary colour (#rrggbb)"
+                   Text="{Binding SecondaryColor}" />
+          <TextBox Grid.Row="3" Grid.Column="0" Margin="0,0,6,0" PlaceholderText="Confidentiality label"
+                   Text="{Binding ConfidentialityLabel}" />
+          <TextBox Grid.Row="3" Grid.Column="1" Margin="6,0,0,0" PlaceholderText="Report version"
+                   Text="{Binding ReportVersion}" />
+        </Grid>
+        <TextBox PlaceholderText="Logo file (PNG, JPEG, GIF or WebP)" Text="{Binding LogoPath}" />
+        <TextBox PlaceholderText="Sign-off names, comma separated" Text="{Binding SignOffNames}" />
+        <TextBox PlaceholderText="Executive narrative" Text="{Binding ExecutiveNarrative}"
+                 AcceptsReturn="True" Height="90" TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card">
+      <StackPanel Spacing="6">
+        <TextBlock Classes="subheading" Text="Sections" />
+        <ItemsControl ItemsSource="{Binding Sections}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ReportSectionViewModel">
+              <CheckBox Content="{Binding Label}" IsChecked="{Binding IsSelected}" Width="240" Margin="0,2" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card warning">
+      <StackPanel Spacing="6">
+        <TextBlock Classes="subheading" Text="Privacy and sensitive content" />
+        <CheckBox Content="Include raw object attributes" IsChecked="{Binding IncludeRawObjectAttributes}" />
+        <CheckBox Content="Include full affected-object lists" IsChecked="{Binding IncludeFullAffectedObjectLists}" />
+        <CheckBox Content="Include operator attachments" IsChecked="{Binding IncludeAttachments}" />
+        <ItemsControl ItemsSource="{Binding Warnings}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <TextBlock Text="{Binding}" TextWrapping="Wrap" Foreground="#8A5A00" Margin="0,3" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card">
+      <StackPanel Spacing="8">
+        <TextBlock Classes="subheading" Text="Generate" />
+        <TextBox PlaceholderText="Output path for the report" Text="{Binding OutputPath}" />
+        <Button Content="Generate report" Command="{Binding GenerateCommand}"
+                IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left" />
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card">
+      <StackPanel Spacing="8">
+        <TextBlock Classes="subheading" Text="Save an encrypted project" />
+        <TextBlock Classes="muted"
+                   Text="Without an explicit save, nothing about this assessment survives the session. The passphrase is used to derive the container key and is then discarded; it is never stored." />
+        <TextBox PlaceholderText="Project path" Text="{Binding ProjectPath}" />
+        <TextBox PlaceholderText="Passphrase" PasswordChar="•" Text="{Binding ProjectPassphrase}" />
+        <TextBox PlaceholderText="Confirm passphrase" PasswordChar="•" Text="{Binding ProjectPassphraseConfirmation}" />
+        <TextBlock Text="{Binding PassphraseStrength}" Classes="muted" />
+        <Button Content="Save project" Command="{Binding SaveProjectCommand}"
+                IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left" />
+      </StackPanel>
+    </Border>
+
+    <TextBlock Text="{Binding StatusMessage}" Foreground="#2F6B4F" TextWrapping="Wrap"
+               IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    <TextBlock Text="{Binding ErrorMessage}" Foreground="#A4243B" TextWrapping="Wrap"
+               IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+  </StackPanel>
+</UserControl>

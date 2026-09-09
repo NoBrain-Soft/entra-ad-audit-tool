@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Ipa.Collectors.ActiveDirectory/Ipa.Collectors.ActiveDirectory.csproj" />
+    <Project Path="src/Ipa.Collectors.Entra/Ipa.Collectors.Entra.csproj" />
+    <Project Path="src/Ipa.Collectors.Hybrid/Ipa.Collectors.Hybrid.csproj" />
+    <Project Path="src/Ipa.Compliance/Ipa.Compliance.csproj" />
+    <Project Path="src/Ipa.Contracts/Ipa.Contracts.csproj" />
+    <Project Path="src/Ipa.Core/Ipa.Core.csproj" />
+    <Project Path="src/Ipa.Desktop/Ipa.Desktop.csproj" />
+    <Project Path="src/Ipa.Persistence/Ipa.Persistence.csproj" />
+    <Project Path="src/Ipa.Reporting/Ipa.Reporting.csproj" />
+    <Project Path="src/Ipa.Rules/Ipa.Rules.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Ipa.Collectors.Tests/Ipa.Collectors.Tests.csproj" />
+    <Project Path="tests/Ipa.Compliance.Tests/Ipa.Compliance.Tests.csproj" />
+    <Project Path="tests/Ipa.Core.Tests/Ipa.Core.Tests.csproj" />
+    <Project Path="tests/Ipa.Desktop.Tests/Ipa.Desktop.Tests.csproj" />
+    <Project Path="tests/Ipa.Persistence.Tests/Ipa.Persistence.Tests.csproj" />
+    <Project Path="tests/Ipa.Reporting.Tests/Ipa.Reporting.Tests.csproj" />
+    <Project Path="tests/Ipa.Rules.Tests/Ipa.Rules.Tests.csproj" />
+  </Folder>
+</Solution>

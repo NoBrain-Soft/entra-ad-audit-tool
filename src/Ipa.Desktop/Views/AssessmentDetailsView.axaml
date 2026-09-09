@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ipa.Desktop.ViewModels"
+             x:Class="Ipa.Desktop.Views.AssessmentDetailsView"
+             x:DataType="vm:AssessmentDetailsViewModel">
+
+  <StackPanel Spacing="12" MaxWidth="820" HorizontalAlignment="Left">
+
+    <Border Classes="card">
+      <StackPanel Spacing="8">
+        <TextBlock Classes="subheading" Text="Customer" />
+        <TextBox PlaceholderText="Customer name (required)" Text="{Binding CustomerName}" />
+        <TextBox PlaceholderText="Customer reference" Text="{Binding CustomerReference}" />
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card">
+      <StackPanel Spacing="8">
+        <TextBlock Classes="subheading" Text="Assessor" />
+        <TextBox PlaceholderText="Assessor name (required)" Text="{Binding AssessorName}" />
+        <TextBox PlaceholderText="Assessor company" Text="{Binding AssessorCompany}" />
+        <TextBox PlaceholderText="Engagement reference" Text="{Binding EngagementReference}" />
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card">
+      <StackPanel Spacing="8">
+        <TextBlock Classes="subheading" Text="Sources in scope" />
+        <CheckBox Content="Active Directory forest" IsChecked="{Binding IncludeActiveDirectory}" />
+        <CheckBox Content="Microsoft Entra tenant" IsChecked="{Binding IncludeEntra}" />
+        <TextBlock Text="{Binding SourceNotice}" Classes="muted" />
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card">
+      <StackPanel Spacing="8">
+        <TextBlock Classes="subheading" Text="Scope notes" />
+        <TextBox PlaceholderText="Anything that qualifies the scope of this engagement"
+                 Text="{Binding ScopeNotes}" AcceptsReturn="True" Height="90" TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
+
+    <Button Content="Create assessment" Command="{Binding ContinueCommand}" HorizontalAlignment="Left" />
+
+    <TextBlock Text="{Binding StatusMessage}" Foreground="#2F6B4F" TextWrapping="Wrap"
+               IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    <TextBlock Text="{Binding ErrorMessage}" Foreground="#A4243B" TextWrapping="Wrap"
+               IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+  </StackPanel>
+</UserControl>

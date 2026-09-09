@@ -1,0 +1,120 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ipa.Desktop.ViewModels"
+             x:Class="Ipa.Desktop.Views.FindingsView"
+             x:DataType="vm:FindingsViewModel">
+
+  <StackPanel Spacing="12">
+
+    <ItemsControl ItemsSource="{Binding ScoreCards}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <WrapPanel Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:ScoreCardViewModel">
+          <Border Classes="card" Width="200" Margin="0,0,10,10">
+            <StackPanel>
+              <TextBlock Text="{Binding Label}" Classes="muted" FontSize="12" />
+              <TextBlock Text="{Binding Value}" Classes="score" />
+              <TextBlock Text="{Binding Coverage}" Classes="muted" FontSize="12" />
+              <TextBlock Text="Provisional: coverage below 90%" Foreground="#CF5C36" FontSize="11"
+                         TextWrapping="Wrap" IsVisible="{Binding IsProvisional}" />
+            </StackPanel>
+          </Border>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+    <Border Classes="card" IsVisible="{Binding ProviderMetric, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+      <TextBlock Text="{Binding ProviderMetric}" TextWrapping="Wrap" />
+    </Border>
+
+    <Border Classes="card" IsVisible="{Binding BaselineMetric, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+      <TextBlock Text="{Binding BaselineMetric}" TextWrapping="Wrap" />
+    </Border>
+
+    <Grid ColumnDefinitions="*,380" MinHeight="420">
+
+      <Border Grid.Column="0" Classes="card" Margin="0,0,10,0">
+        <StackPanel Spacing="8">
+          <Grid ColumnDefinitions="*,140,140,Auto">
+            <TextBox Grid.Column="0" PlaceholderText="Search findings and affected objects"
+                     Text="{Binding SearchText}" />
+            <ComboBox Grid.Column="1" ItemsSource="{Binding SeverityFilters}"
+                      SelectedItem="{Binding SelectedSeverity}" Margin="6,0,0,0" />
+            <ComboBox Grid.Column="2" ItemsSource="{Binding DomainFilters}"
+                      SelectedItem="{Binding SelectedDomain}" Margin="6,0,0,0" />
+            <CheckBox Grid.Column="3" Content="Hide annotated" IsChecked="{Binding HideAnnotated}"
+                      Margin="6,0,0,0" VerticalAlignment="Center" />
+          </Grid>
+
+          <DataGrid ItemsSource="{Binding Findings}" SelectedItem="{Binding SelectedFinding}"
+                    AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
+                    MinHeight="330">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="100" />
+              <DataGridTextColumn Header="Rule" Binding="{Binding RuleId.Value}" Width="130" />
+              <DataGridTextColumn Header="Finding" Binding="{Binding Title}" Width="*" />
+              <DataGridTextColumn Header="Objects" Binding="{Binding AffectedObjects.Count}" Width="80" />
+              <DataGridTextColumn Header="Disposition" Binding="{Binding Disposition}" Width="120" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Column="1" Classes="card">
+        <ScrollViewer>
+          <StackPanel Spacing="8" DataContext="{Binding}">
+            <TextBlock Classes="subheading" Text="Selected finding" />
+
+            <StackPanel IsVisible="{Binding SelectedFinding, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        Spacing="6">
+              <TextBlock Text="{Binding SelectedFinding.Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding SelectedFinding.Rationale}" Classes="muted" />
+              <TextBlock Text="{Binding SelectedFinding.RiskExplanation}" Classes="muted" />
+              <TextBlock Text="{Binding SelectedFinding.Remediation}" TextWrapping="Wrap" />
+
+              <TextBlock Classes="subheading" Text="Affected objects" />
+              <DataGrid ItemsSource="{Binding AffectedObjects}" AutoGenerateColumns="False"
+                        IsReadOnly="True" MaxHeight="180" HeadersVisibility="Column">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="Object" Binding="{Binding DisplayName}" Width="*" />
+                  <DataGridTextColumn Header="Type" Binding="{Binding ObjectType}" Width="90" />
+                </DataGrid.Columns>
+              </DataGrid>
+
+              <TextBlock Classes="subheading" Text="Assessor disposition" />
+              <ComboBox ItemsSource="{Binding Dispositions}" SelectedItem="{Binding SelectedDisposition}"
+                        HorizontalAlignment="Stretch" />
+              <TextBox PlaceholderText="Justification (required for any disposition)"
+                       Text="{Binding Justification}" AcceptsReturn="True" Height="70" TextWrapping="Wrap" />
+              <TextBox PlaceholderText="Assessor notes" Text="{Binding OperatorNotes}"
+                       AcceptsReturn="True" Height="60" TextWrapping="Wrap" />
+              <TextBlock Classes="muted"
+                         Text="A disposition is reported as an annotation. It never changes the raw score." />
+              <Button Content="Save disposition" Command="{Binding SaveDispositionCommand}" />
+            </StackPanel>
+
+            <TextBlock Classes="muted" Text="Select a finding to inspect it."
+                       IsVisible="{Binding SelectedFinding, Converter={x:Static ObjectConverters.IsNull}}" />
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+
+    </Grid>
+
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <Button Content="Refresh" Command="{Binding RefreshCommand}" />
+      <Button Content="ISO readiness" Command="{Binding GoToComplianceCommand}" />
+      <Button Content="Report" Command="{Binding GoToReportCommand}" />
+    </StackPanel>
+
+    <TextBlock Text="{Binding StatusMessage}" Foreground="#2F6B4F" TextWrapping="Wrap"
+               IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    <TextBlock Text="{Binding ErrorMessage}" Foreground="#A4243B" TextWrapping="Wrap"
+               IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+  </StackPanel>
+</UserControl>

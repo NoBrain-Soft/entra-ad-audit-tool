@@ -1,0 +1,108 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ipa.Desktop.ViewModels"
+             x:Class="Ipa.Desktop.Views.ConnectionsView"
+             x:DataType="vm:ConnectionsViewModel">
+
+  <StackPanel Spacing="12" MaxWidth="920" HorizontalAlignment="Left">
+
+    <Border Classes="card" IsVisible="{Binding IncludesActiveDirectory}">
+      <StackPanel Spacing="8">
+        <TextBlock Classes="subheading" Text="Active Directory" />
+        <TextBox PlaceholderText="Domain controller or domain name" Text="{Binding DirectoryServer}" />
+
+        <CheckBox Content="Use Windows integrated authentication"
+                  IsChecked="{Binding UseWindowsIntegrated}"
+                  IsEnabled="{Binding !IntegratedAuthenticationUnavailable}" />
+
+        <TextBlock Classes="muted" IsVisible="{Binding IntegratedAuthenticationUnavailable}"
+                   Text="Windows integrated authentication is available on Windows only. On this host, supply explicit credentials over LDAPS or StartTLS." />
+
+        <StackPanel Spacing="8" IsVisible="{Binding !UseWindowsIntegrated}">
+          <TextBox PlaceholderText="Account name" Text="{Binding DirectoryUserName}" />
+          <TextBox PlaceholderText="Domain" Text="{Binding DirectoryDomain}" />
+          <TextBox PlaceholderText="Password" PasswordChar="•" Text="{Binding DirectoryPassword}" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Text="Transport" VerticalAlignment="Center" />
+          <ComboBox ItemsSource="{Binding TransportOptions}" SelectedItem="{Binding Transport}"
+                    MinWidth="180" />
+        </StackPanel>
+
+        <TextBlock Text="{Binding TransportNotice}" Classes="muted" />
+
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button Content="Validate settings" Command="{Binding ValidateDirectorySettingsCommand}" />
+          <Button Content="Connect" Command="{Binding ConnectDirectoryCommand}" IsEnabled="{Binding !IsBusy}" />
+          <TextBlock Text="Connected" Foreground="#2F6B4F" VerticalAlignment="Center"
+                     IsVisible="{Binding IsDirectoryConnected}" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card" IsVisible="{Binding IncludesEntra}">
+      <StackPanel Spacing="8">
+        <TextBlock Classes="subheading" Text="Microsoft Entra application registration" />
+        <TextBlock Classes="muted"
+                   Text="The registration belongs to the customer's tenant, so the customer controls what is consented and can revoke it at any time. This product never uses a client secret." />
+
+        <ItemsControl ItemsSource="{Binding SetupSteps}" Margin="0,4">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <TextBlock Text="{Binding}" Classes="muted" TextWrapping="Wrap" Margin="0,2" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <TextBox PlaceholderText="Directory (tenant) ID or verified domain" Text="{Binding TenantId}" />
+        <TextBox PlaceholderText="Application (client) ID" Text="{Binding ClientId}" />
+        <TextBox PlaceholderText="Redirect address" Text="{Binding RedirectUri}" />
+
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button Content="Prepare administrator consent" Command="{Binding PrepareConsentCommand}" />
+          <Button Content="Sign in" Command="{Binding ConnectTenantCommand}" IsEnabled="{Binding !IsBusy}" />
+          <TextBlock Text="Signed in" Foreground="#2F6B4F" VerticalAlignment="Center"
+                     IsVisible="{Binding IsTenantConnected}" />
+        </StackPanel>
+
+        <Border Classes="card warning" Margin="0,6,0,0"
+                IsVisible="{Binding DeviceCodeMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+          <TextBlock Text="{Binding DeviceCodeMessage}" TextWrapping="Wrap" />
+        </Border>
+
+        <TextBox Text="{Binding AdminConsentUrl}" IsReadOnly="True" Classes="mono"
+                 TextWrapping="Wrap" AcceptsReturn="True" Height="70"
+                 IsVisible="{Binding AdminConsentUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card" IsVisible="{Binding IncludesEntra}">
+      <StackPanel Spacing="6">
+        <TextBlock Classes="subheading" Text="Permissions this assessment will request" />
+        <TextBlock Classes="muted">
+          <Run Text="Manifest version" />
+          <Run Text="{Binding PermissionManifestVersion}" />
+          <Run Text="- every permission is read-only, and only the permissions the selected check groups need are requested." />
+        </TextBlock>
+
+        <DataGrid ItemsSource="{Binding Permissions}" AutoGenerateColumns="False" IsReadOnly="True"
+                  MaxHeight="260" HeadersVisibility="Column">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Permission" Binding="{Binding Scope}" Width="220" />
+            <DataGridTextColumn Header="Purpose" Binding="{Binding Purpose}" Width="*" />
+            <DataGridCheckBoxColumn Header="Sensitive" Binding="{Binding IsSensitive}" Width="90" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </StackPanel>
+    </Border>
+
+    <Button Content="Continue to preflight" Command="{Binding ContinueCommand}" HorizontalAlignment="Left" />
+
+    <TextBlock Text="{Binding StatusMessage}" Foreground="#2F6B4F" TextWrapping="Wrap"
+               IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    <TextBlock Text="{Binding ErrorMessage}" Foreground="#A4243B" TextWrapping="Wrap"
+               IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+  </StackPanel>
+</UserControl>

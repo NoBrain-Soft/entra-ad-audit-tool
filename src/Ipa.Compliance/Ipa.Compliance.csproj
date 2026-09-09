@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Ipa.Compliance</RootNamespace>
+    <Description>ISO/IEC 27001 readiness workspace: control catalogue identifiers, tool-authored guidance, attestations and readiness metrics.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Ipa.Contracts/Ipa.Contracts.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Ipa.Collectors.Hybrid</RootNamespace>
+    <Description>Hybrid identity correlation between an Active Directory forest and an Entra tenant.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Ipa.Contracts/Ipa.Contracts.csproj" />
+  </ItemGroup>
+</Project>

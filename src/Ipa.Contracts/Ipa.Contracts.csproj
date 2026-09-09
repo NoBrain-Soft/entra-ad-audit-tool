@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Ipa.Contracts</RootNamespace>
+    <Description>Shared, UI-independent contracts: collectors, rules, findings, evidence, framework mappings and report profiles.</Description>
+  </PropertyGroup>
+</Project>

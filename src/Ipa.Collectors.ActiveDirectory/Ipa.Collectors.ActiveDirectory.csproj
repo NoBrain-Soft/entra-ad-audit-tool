@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Ipa.Collectors.ActiveDirectory</RootNamespace>
+    <Description>Read-only Active Directory, SYSVOL and Group Policy collection over LDAP/LDAPS and SMB2.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.DirectoryServices.Protocols" />
+    <PackageReference Include="SMBLibrary" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Ipa.Contracts/Ipa.Contracts.csproj" />
+  </ItemGroup>
+</Project>

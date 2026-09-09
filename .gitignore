@@ -1,0 +1,37 @@
+# Build output
+bin/
+obj/
+artifacts/
+publish/
+*.user
+*.suo
+*.userprefs
+
+# Test output
+TestResults/
+coverage/
+*.trx
+*.coverage
+*.cobertura.xml
+
+# Tooling
+.vs/
+.vscode/
+.idea/
+*.swp
+*~
+
+# Local secrets / operator data (must never be committed)
+*.ipaproj
+*.ipaproj.*
+local.settings.json
+appsettings.Local.json
+secrets/
+
+# Playwright browsers
+.playwright/
+ms-playwright/
+
+# Generated release metadata
+*.sbom.json
+*.sha256

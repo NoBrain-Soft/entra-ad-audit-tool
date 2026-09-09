@@ -1,0 +1,103 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to publish
+        required: true
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+  CI: true
+
+jobs:
+  publish:
+    name: Publish (${{ matrix.rid }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            rid: win-x64
+          - os: ubuntu-24.04
+            rid: linux-x64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Publish self-contained
+        shell: bash
+        run: |
+          dotnet publish src/Ipa.Desktop \
+            --configuration Release \
+            --runtime ${{ matrix.rid }} \
+            --self-contained true \
+            --output artifacts/${{ matrix.rid }}
+
+      - name: Generate the software bill of materials
+        shell: bash
+        run: |
+          dotnet tool install --global CycloneDX --version 5.4.0
+          "$HOME/.dotnet/tools/dotnet-CycloneDX" IdentityPostureAssessor.slnx \
+            --output artifacts/${{ matrix.rid }} --filename sbom.json --json
+
+      - name: Generate third-party notices
+        shell: bash
+        run: |
+          # The checked-in notices list what is used; the generated file carries the licence texts.
+          cp THIRD-PARTY-NOTICES.md artifacts/${{ matrix.rid }}/
+
+      - name: Sign Windows binaries
+        if: matrix.rid == 'win-x64'
+        shell: pwsh
+        env:
+          SIGNING_CERTIFICATE: ${{ secrets.AUTHENTICODE_CERTIFICATE }}
+          SIGNING_PASSWORD: ${{ secrets.AUTHENTICODE_PASSWORD }}
+          TIMESTAMP_URL: ${{ vars.AUTHENTICODE_TIMESTAMP_URL }}
+        run: |
+          # Signing runs only where the release secrets are configured, so a fork build still passes.
+          if (-not $env:SIGNING_CERTIFICATE) {
+            Write-Host 'No signing certificate is configured; skipping Authenticode signing.'
+            exit 0
+          }
+          ./build/sign-windows.ps1 -Path artifacts/${{ matrix.rid }}
+
+      - name: Package for Linux
+        if: matrix.rid == 'linux-x64'
+        run: ./build/package-linux.sh artifacts/linux-x64 "${{ github.ref_name }}"
+
+      - name: Produce checksums
+        shell: bash
+        run: |
+          cd artifacts/${{ matrix.rid }}
+          find . -maxdepth 1 -type f -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS
+
+      - name: Record reproducible release metadata
+        shell: bash
+        run: |
+          cat > artifacts/${{ matrix.rid }}/release-metadata.json <<JSON
+          {
+            "version": "${{ github.ref_name }}",
+            "commit": "${{ github.sha }}",
+            "runtimeIdentifier": "${{ matrix.rid }}",
+            "dotnetSdk": "$(dotnet --version)",
+            "builtAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "workflowRun": "${{ github.run_id }}"
+          }
+          JSON
+
+      - name: Upload release artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.rid }}
+          path: artifacts/${{ matrix.rid }}

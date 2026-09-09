@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Ipa.Core</RootNamespace>
+    <Description>Application services: assessment orchestration, staged collection pipeline, diagnostics and recalculation.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Ipa.Contracts/Ipa.Contracts.csproj" />
+    <ProjectReference Include="../Ipa.Rules/Ipa.Rules.csproj" />
+    <ProjectReference Include="../Ipa.Compliance/Ipa.Compliance.csproj" />
+    <ProjectReference Include="../Ipa.Collectors.ActiveDirectory/Ipa.Collectors.ActiveDirectory.csproj" />
+    <ProjectReference Include="../Ipa.Collectors.Entra/Ipa.Collectors.Entra.csproj" />
+    <ProjectReference Include="../Ipa.Collectors.Hybrid/Ipa.Collectors.Hybrid.csproj" />
+    <ProjectReference Include="../Ipa.Persistence/Ipa.Persistence.csproj" />
+    <ProjectReference Include="../Ipa.Reporting/Ipa.Reporting.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Ipa.Rules</RootNamespace>
+    <Description>First-party rule pack and deterministic scoring engine. Ships embedded in every signed release.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Ipa.Contracts/Ipa.Contracts.csproj" />
+  </ItemGroup>
+</Project>

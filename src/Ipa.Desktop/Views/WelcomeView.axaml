@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ipa.Desktop.ViewModels"
+             x:Class="Ipa.Desktop.Views.WelcomeView"
+             x:DataType="vm:WelcomeViewModel">
+
+  <StackPanel Spacing="12" MaxWidth="900" HorizontalAlignment="Left">
+
+    <Border Classes="card">
+      <StackPanel Spacing="8">
+        <TextBlock Classes="subheading" Text="Start a new assessment" />
+        <TextBlock Classes="muted"
+                   Text="Assessments are ephemeral. Working data is held in a temporary encrypted database and deleted when the application closes, unless you explicitly save an encrypted project." />
+        <Button Content="New assessment" Command="{Binding StartNewAssessmentCommand}"
+                HorizontalAlignment="Left" />
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card">
+      <StackPanel Spacing="8">
+        <TextBlock Classes="subheading" Text="Open a saved project" />
+        <TextBox PlaceholderText="Path to the project file" Text="{Binding ProjectPath}" />
+        <TextBox PlaceholderText="Project passphrase" PasswordChar="•" Text="{Binding ProjectPassphrase}" />
+        <TextBlock Classes="muted"
+                   Text="The passphrase is used to derive the container key and is then discarded. It is never stored." />
+        <Button Content="Open project" Command="{Binding OpenProjectCommand}" HorizontalAlignment="Left" />
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card warning" IsVisible="{Binding HasStaleSessions}">
+      <StackPanel Spacing="8">
+        <TextBlock Classes="subheading" Text="Sessions left behind by a previous run" />
+        <TextBlock Classes="muted"
+                   Text="These directories are working data from a run that did not close normally. They are encrypted with a key that no longer exists, so nothing can be recovered from them." />
+        <ItemsControl ItemsSource="{Binding StaleSessions}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:StaleSessionViewModel">
+              <Grid ColumnDefinitions="*,Auto" Margin="0,4">
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="{Binding Directory}" Classes="mono" TextWrapping="Wrap" />
+                  <TextBlock Text="{Binding Description}" Classes="muted" FontSize="12" />
+                </StackPanel>
+                <Button Grid.Column="1" Content="Delete" Margin="10,0,0,0"
+                        Command="{Binding $parent[ItemsControl].((vm:WelcomeViewModel)DataContext).CleanupStaleSessionCommand}"
+                        CommandParameter="{Binding}" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Button Content="Rescan" Command="{Binding RefreshStaleSessionsCommand}" HorizontalAlignment="Left" />
+      </StackPanel>
+    </Border>
+
+    <TextBlock Text="{Binding StatusMessage}" Foreground="#2F6B4F" TextWrapping="Wrap"
+               IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    <TextBlock Text="{Binding ErrorMessage}" Foreground="#A4243B" TextWrapping="Wrap"
+               IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+  </StackPanel>
+</UserControl>
