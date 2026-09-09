@@ -1,9 +1,7 @@
-using Ipa.Contracts;
-using Ipa.Contracts.Collection;
 using Ipa.Contracts.Evidence;
 using Ipa.Contracts.Security;
 
-namespace Ipa.Collectors.ActiveDirectory.Collectors;
+namespace Ipa.Contracts.Collection;
 
 /// <summary>
 /// Accumulates the availability entries, diagnostics and evidence records a collector produces,

@@ -40,7 +40,7 @@ public static class DirectoryObjectNormaliser
     /// <summary>Attributes requested for user objects.</summary>
     public static string[] UserAttributes { get; } =
     [
-        "objectSid", "distinguishedName", "sAMAccountName", "userPrincipalName", "displayName",
+        "objectSid", "objectGUID", "distinguishedName", "sAMAccountName", "userPrincipalName", "displayName",
         "userAccountControl", "whenCreated", "lastLogonTimestamp", "pwdLastSet", "adminCount",
         "servicePrincipalName", "msDS-AllowedToDelegateTo", "sIDHistory", "primaryGroupID",
         "objectClass", "lockoutTime", "msDS-User-Account-Control-Computed",
@@ -83,6 +83,7 @@ public static class DirectoryObjectNormaliser
         return new AdPrincipal
         {
             Sid = sid,
+            ObjectGuid = ReadObjectGuid(entry),
             DistinguishedName = distinguishedName,
             SamAccountName = samAccountName,
             UserPrincipalName = AttributeReader.GetString(entry, "userPrincipalName"),
@@ -261,6 +262,16 @@ public static class DirectoryObjectNormaliser
     {
         var descriptorBytes = AttributeReader.GetBytes(entry, "nTSecurityDescriptor");
         return descriptorBytes is null ? null : SecurityDescriptorParser.Parse(descriptorBytes)?.OwnerSid;
+    }
+
+    /// <summary>
+    /// Reads the object's globally unique identifier. The directory stores it as a raw sixteen-byte
+    /// value in the same layout the .NET type uses, so no byte reordering is required.
+    /// </summary>
+    public static Guid? ReadObjectGuid(SearchResultEntry entry)
+    {
+        var bytes = AttributeReader.GetBytes(entry, "objectGUID");
+        return bytes is { Length: 16 } ? new Guid(bytes) : null;
     }
 
     /// <summary>Maps userAccountControl and computed flags onto the normalised flag set.</summary>

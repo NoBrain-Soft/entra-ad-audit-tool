@@ -32,6 +32,13 @@ public enum AdDelegationKind
 public sealed record AdPrincipal
 {
     public required string Sid { get; init; }
+
+    /// <summary>
+    /// The object's globally unique identifier. This is the value a synchronised cloud object
+    /// encodes as its immutable identifier, so it is the authoritative hybrid matching anchor.
+    /// </summary>
+    public Guid? ObjectGuid { get; init; }
+
     public required string DistinguishedName { get; init; }
     public required string SamAccountName { get; init; }
     public string? UserPrincipalName { get; init; }
