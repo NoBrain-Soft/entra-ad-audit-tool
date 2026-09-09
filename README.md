@@ -1,0 +1,1 @@
+# entra-ad-audit-tool
