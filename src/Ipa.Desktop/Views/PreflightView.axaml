@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ipa.Desktop.ViewModels"
+             x:Class="Ipa.Desktop.Views.PreflightView"
+             x:DataType="vm:PreflightViewModel">
+
+  <StackPanel Spacing="12" MaxWidth="920" HorizontalAlignment="Left">
+
+    <ItemsControl ItemsSource="{Binding Findings}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:PreflightRow">
+          <Border Classes="card">
+            <StackPanel Spacing="4">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Border Background="#1F3A5F" CornerRadius="9" Padding="7,2">
+                  <TextBlock Text="{Binding Severity}" Foreground="White" FontSize="11" />
+                </Border>
+                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" VerticalAlignment="Center" />
+              </StackPanel>
+              <TextBlock Text="{Binding Detail}" Classes="muted" />
+              <TextBlock Text="{Binding Remedy}" Classes="muted" FontStyle="Italic"
+                         IsVisible="{Binding Remedy, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+              <TextBlock Text="{Binding AffectedGroups}" Classes="mono" Opacity="0.65" />
+            </StackPanel>
+          </Border>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+    <Border Classes="card warning" IsVisible="{Binding IsDegraded}">
+      <TextBlock TextWrapping="Wrap"
+                 Text="Some checks will report as not collected. This reduces weighted collection coverage and may mark the scores provisional, which the report states explicitly." />
+    </Border>
+
+    <Button Content="Continue to scope" Command="{Binding ContinueCommand}"
+            IsEnabled="{Binding CanProceed}" HorizontalAlignment="Left" />
+
+    <TextBlock Text="{Binding StatusMessage}" Foreground="#2F6B4F" TextWrapping="Wrap"
+               IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+  </StackPanel>
+</UserControl>

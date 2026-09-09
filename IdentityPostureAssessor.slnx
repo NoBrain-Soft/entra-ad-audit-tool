@@ -15,6 +15,7 @@
     <Project Path="tests/Ipa.Collectors.Tests/Ipa.Collectors.Tests.csproj" />
     <Project Path="tests/Ipa.Compliance.Tests/Ipa.Compliance.Tests.csproj" />
     <Project Path="tests/Ipa.Core.Tests/Ipa.Core.Tests.csproj" />
+    <Project Path="tests/Ipa.Desktop.Tests/Ipa.Desktop.Tests.csproj" />
     <Project Path="tests/Ipa.Persistence.Tests/Ipa.Persistence.Tests.csproj" />
     <Project Path="tests/Ipa.Reporting.Tests/Ipa.Reporting.Tests.csproj" />
     <Project Path="tests/Ipa.Rules.Tests/Ipa.Rules.Tests.csproj" />

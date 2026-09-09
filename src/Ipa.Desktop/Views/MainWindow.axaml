@@ -1,0 +1,89 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Ipa.Desktop.ViewModels"
+        xmlns:views="using:Ipa.Desktop.Views"
+        x:Class="Ipa.Desktop.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Width="1280" Height="860"
+        MinWidth="1024" MinHeight="700"
+        Title="{Binding Title}">
+
+  <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="230,*">
+
+    <!-- Header -->
+    <Border Grid.Row="0" Grid.ColumnSpan="2" Background="#1F3A5F" Padding="16,12">
+      <StackPanel>
+        <TextBlock Text="{Binding Current.Title}" Foreground="White" FontSize="20" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding Current.Description}" Foreground="#D6E0EC"
+                   TextWrapping="Wrap" Margin="0,3,0,0" />
+      </StackPanel>
+    </Border>
+
+    <!-- Workflow rail -->
+    <Border Grid.Row="1" Grid.Column="0" Background="#F3F5F8" BorderBrush="#D8DBE0" BorderThickness="0,0,1,0">
+      <ItemsControl ItemsSource="{Binding Steps}" Margin="8">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:WorkflowStepViewModel">
+            <Button Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).GoToCommand}"
+                    CommandParameter="{Binding Step}"
+                    IsEnabled="{Binding IsEnabled}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Left"
+                    Margin="0,2" Padding="10,8">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Border Width="22" Height="22" CornerRadius="11" Background="#1F3A5F"
+                        VerticalAlignment="Center">
+                  <TextBlock Text="{Binding Number}" Foreground="White" FontSize="12"
+                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </Border>
+
+    <!-- Current step -->
+    <ScrollViewer Grid.Row="1" Grid.Column="1" Padding="20">
+      <ContentControl Content="{Binding Current}">
+        <ContentControl.DataTemplates>
+          <DataTemplate DataType="vm:WelcomeViewModel">
+            <views:WelcomeView />
+          </DataTemplate>
+          <DataTemplate DataType="vm:AssessmentDetailsViewModel">
+            <views:AssessmentDetailsView />
+          </DataTemplate>
+          <DataTemplate DataType="vm:ConnectionsViewModel">
+            <views:ConnectionsView />
+          </DataTemplate>
+          <DataTemplate DataType="vm:PreflightViewModel">
+            <views:PreflightView />
+          </DataTemplate>
+          <DataTemplate DataType="vm:ScopeViewModel">
+            <views:ScopeView />
+          </DataTemplate>
+          <DataTemplate DataType="vm:CollectionViewModel">
+            <views:CollectionView />
+          </DataTemplate>
+          <DataTemplate DataType="vm:FindingsViewModel">
+            <views:FindingsView />
+          </DataTemplate>
+          <DataTemplate DataType="vm:ComplianceViewModel">
+            <views:ComplianceView />
+          </DataTemplate>
+          <DataTemplate DataType="vm:ReportViewModel">
+            <views:ReportView />
+          </DataTemplate>
+        </ContentControl.DataTemplates>
+      </ContentControl>
+    </ScrollViewer>
+
+    <!-- Status bar -->
+    <Border Grid.Row="2" Grid.ColumnSpan="2" Background="#E8EBF0" Padding="14,7"
+            BorderBrush="#D8DBE0" BorderThickness="0,1,0,0">
+      <TextBlock Text="{Binding ShellStatus}" FontSize="12" />
+    </Border>
+
+  </Grid>
+</Window>

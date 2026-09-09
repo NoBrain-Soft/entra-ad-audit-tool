@@ -1,0 +1,107 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Ipa.Desktop.ViewModels"
+             x:Class="Ipa.Desktop.Views.ComplianceView"
+             x:DataType="vm:ComplianceViewModel">
+
+  <StackPanel Spacing="12">
+
+    <Border Classes="card warning">
+      <TextBlock Text="{Binding AuthorshipNote}" TextWrapping="Wrap" />
+    </Border>
+
+    <StackPanel Orientation="Horizontal" Spacing="10">
+      <Border Classes="card" Width="220">
+        <StackPanel>
+          <TextBlock Text="Evidence coverage" Classes="muted" FontSize="12" />
+          <TextBlock Text="{Binding EvidenceCoverage}" Classes="score" />
+          <TextBlock Text="Assessed applicable controls" Classes="muted" FontSize="11" />
+        </StackPanel>
+      </Border>
+      <Border Classes="card" Width="220">
+        <StackPanel>
+          <TextBlock Text="Readiness" Classes="muted" FontSize="12" />
+          <TextBlock Text="{Binding Readiness}" Classes="score" />
+          <TextBlock Text="Confirmed satisfied of assessed" Classes="muted" FontSize="11" />
+        </StackPanel>
+      </Border>
+      <Border Classes="card" MinWidth="380">
+        <StackPanel>
+          <TextBlock Text="Status distribution" Classes="muted" FontSize="12" />
+          <TextBlock Text="{Binding StatusDistribution}" TextWrapping="Wrap" Margin="0,4,0,0" />
+        </StackPanel>
+      </Border>
+    </StackPanel>
+
+    <Grid ColumnDefinitions="*,400" MinHeight="420">
+
+      <Border Grid.Column="0" Classes="card" Margin="0,0,10,0">
+        <StackPanel Spacing="8">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <ComboBox ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" MinWidth="170" />
+            <CheckBox Content="Only controls awaiting confirmation" IsChecked="{Binding ShowOnlyPending}"
+                      VerticalAlignment="Center" />
+          </StackPanel>
+
+          <DataGrid ItemsSource="{Binding Controls}" SelectedItem="{Binding SelectedControl}"
+                    AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
+                    MinHeight="340">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Control" Binding="{Binding ControlId}" Width="90" />
+              <DataGridTextColumn Header="Subject" Binding="{Binding Label}" Width="*" />
+              <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" />
+              <DataGridCheckBoxColumn Header="Confirmed" Binding="{Binding IsConfirmed}" Width="90" />
+              <DataGridTextColumn Header="Automated evidence" Binding="{Binding Suggested}" Width="190" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Column="1" Classes="card">
+        <ScrollViewer>
+          <StackPanel Spacing="8">
+            <TextBlock Classes="subheading" Text="Selected control" />
+
+            <StackPanel IsVisible="{Binding SelectedControl, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        Spacing="6">
+              <TextBlock Text="{Binding SelectedControl.ControlId}" Classes="mono" />
+              <TextBlock Text="{Binding SelectedControl.Label}" FontWeight="SemiBold" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding SelectedControl.Definition.ToolAuthoredGuidance}"
+                         Classes="muted" />
+              <TextBlock Text="{Binding SelectedControl.MappedRules}" Classes="mono" Opacity="0.7"
+                         TextWrapping="Wrap" />
+
+              <TextBlock Classes="subheading" Text="Record your judgement" />
+              <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding StatusToRecord}"
+                        HorizontalAlignment="Stretch" />
+              <TextBox PlaceholderText="Notes" Text="{Binding ControlNotes}" AcceptsReturn="True"
+                       Height="70" TextWrapping="Wrap" />
+              <TextBlock Classes="muted"
+                         Text="Automated evidence can suggest a status. Only your confirmation records one." />
+              <Button Content="Confirm status" Command="{Binding ConfirmStatusCommand}" />
+
+              <TextBlock Classes="subheading" Text="Licensed control text" />
+              <TextBox PlaceholderText="Paste the wording from your own licensed copy of the standard"
+                       Text="{Binding LicensedText}" AcceptsReturn="True" Height="90" TextWrapping="Wrap" />
+              <TextBlock Classes="muted"
+                         Text="Stored inside this project only. It is never shipped with the product." />
+              <Button Content="Save licensed text" Command="{Binding SaveLicensedTextCommand}" />
+            </StackPanel>
+
+            <TextBlock Classes="muted" Text="Select a control to work on it."
+                       IsVisible="{Binding SelectedControl, Converter={x:Static ObjectConverters.IsNull}}" />
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+
+    </Grid>
+
+    <Button Content="Continue to report" Command="{Binding GoToReportCommand}" HorizontalAlignment="Left" />
+
+    <TextBlock Text="{Binding StatusMessage}" Foreground="#2F6B4F" TextWrapping="Wrap"
+               IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    <TextBlock Text="{Binding ErrorMessage}" Foreground="#A4243B" TextWrapping="Wrap"
+               IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+  </StackPanel>
+</UserControl>
