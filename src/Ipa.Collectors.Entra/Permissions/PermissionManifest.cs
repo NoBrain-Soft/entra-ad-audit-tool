@@ -119,11 +119,31 @@ public static class PermissionManifest
     }
 
     /// <summary>
-    /// Verifies that no scope in the manifest grants write access. The check runs in the test suite
-    /// so that a future edit cannot introduce a write permission unnoticed.
+    /// Permission verbs that confer write access. Microsoft Graph scopes are dot separated, with
+    /// the verb in its own segment, so the comparison is made per segment: matching a substring
+    /// would misjudge a read-only scope such as RoleManagement.Read.Directory.
     /// </summary>
-    public static bool IsReadOnly(string scope) =>
-        !scope.Contains("Write", StringComparison.OrdinalIgnoreCase)
-        && !scope.Contains("Manage", StringComparison.OrdinalIgnoreCase)
-        && !scope.Contains("full_access", StringComparison.OrdinalIgnoreCase);
+    private static readonly HashSet<string> WriteVerbs = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "ReadWrite", "Write", "Manage", "ManageAsApp", "FullControl", "AccessAsUser",
+        "Create", "Update", "Delete", "Send", "Submit",
+    };
+
+    /// <summary>
+    /// Verifies that a scope grants no write access. The check runs over the whole manifest in the
+    /// test suite, so a future edit cannot introduce a write permission unnoticed.
+    /// </summary>
+    public static bool IsReadOnly(string scope)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(scope);
+
+        if (scope.Contains("full_access", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return !scope
+            .Split('.', StringSplitOptions.RemoveEmptyEntries)
+            .Any(WriteVerbs.Contains);
+    }
 }

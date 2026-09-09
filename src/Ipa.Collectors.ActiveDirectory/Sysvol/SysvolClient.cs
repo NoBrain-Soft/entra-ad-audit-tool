@@ -245,13 +245,18 @@ public sealed class SysvolClient : IDisposable
     {
         ArgumentNullException.ThrowIfNull(path);
 
-        var value = path.Replace('/', '\\').Trim('\\');
+        var value = path.Replace('/', '\\');
 
+        // A universal naming convention path names the host and the share before the content:
+        // \\server\SYSVOL\domain\Policies\... The share layer addresses paths relative to the
+        // share, so the first two segments are removed before the leading separators are trimmed.
         if (value.StartsWith(@"\\", StringComparison.Ordinal))
         {
             var segments = value.TrimStart('\\').Split('\\', 3);
             value = segments.Length == 3 ? segments[2] : string.Empty;
         }
+
+        value = value.Trim('\\');
 
         if (value.Split('\\').Any(segment => segment == ".."))
         {
