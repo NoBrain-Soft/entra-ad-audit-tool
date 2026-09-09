@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>Ipa.Collectors.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Ipa.Collectors.ActiveDirectory/Ipa.Collectors.ActiveDirectory.csproj" />
+    <ProjectReference Include="../../src/Ipa.Collectors.Entra/Ipa.Collectors.Entra.csproj" />
+    <ProjectReference Include="../../src/Ipa.Collectors.Hybrid/Ipa.Collectors.Hybrid.csproj" />
+    <ProjectReference Include="../../src/Ipa.Contracts/Ipa.Contracts.csproj" />
+  </ItemGroup>
+</Project>
