@@ -24,13 +24,17 @@ public sealed class SampleReportTests
 
         await RenderBrowser.RequireAsync();
 
-        Directory.CreateDirectory(directory!);
+        // Resolved and reported, because a test process runs from its own output directory: a
+        // relative path does not mean what the caller who set it usually assumes.
+        var resolved = Path.GetFullPath(directory!);
+        Directory.CreateDirectory(resolved);
+        Console.WriteLine($"Writing the sample report to {resolved}.");
 
         var model = SampleReportData.Build();
         var html = new HtmlReportComposer().Compose(model);
 
         await File.WriteAllTextAsync(
-            Path.Combine(directory!, "sample-report.html"),
+            Path.Combine(resolved, "sample-report.html"),
             html,
             CancellationToken.None);
 
@@ -38,7 +42,7 @@ public sealed class SampleReportTests
 
         await renderer.RenderAsync(
             html,
-            Path.Combine(directory!, "sample-report.pdf"),
+            Path.Combine(resolved, "sample-report.pdf"),
             new PdfRenderOptions
             {
                 ConfidentialityLabel = model.Profile.Branding.ConfidentialityLabel,
@@ -47,6 +51,6 @@ public sealed class SampleReportTests
             },
             CancellationToken.None);
 
-        Assert.True(File.Exists(Path.Combine(directory!, "sample-report.pdf")));
+        Assert.True(File.Exists(Path.Combine(resolved, "sample-report.pdf")));
     }
 }

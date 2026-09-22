@@ -93,7 +93,9 @@ jobs:
 
       - name: Render
         env:
-          IPA_SAMPLE_REPORT_DIR: artifacts/sample-report
+          # Absolute on purpose. A test process runs from its own output directory, so a relative
+          # path here wrote the sample into bin/ and left the uploaded artifact empty.
+          IPA_SAMPLE_REPORT_DIR: ${{ github.workspace }}/artifacts/sample-report
         run: >
           dotnet test tests/Ipa.Reporting.Tests --configuration Release --no-build
           --filter SampleReportIsWrittenWhenRequested
