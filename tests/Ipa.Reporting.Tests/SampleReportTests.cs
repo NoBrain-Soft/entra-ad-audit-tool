@@ -17,14 +17,12 @@ public sealed class SampleReportTests
     public async Task SampleReportIsWrittenWhenRequested()
     {
         var directory = Environment.GetEnvironmentVariable(OutputVariable);
+
+        // Writing the sample is opt-in, so its absence is a genuine reason to skip. A missing
+        // browser is not, once the sample has been asked for.
         Skip.If(string.IsNullOrWhiteSpace(directory), "No sample report directory was requested.");
 
-        var browser = Environment.GetEnvironmentVariable(PdfRenderOptions.BrowserPathVariable)
-                      ?? Path.Combine(
-                          Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH") ?? string.Empty,
-                          "chromium");
-
-        Skip.If(!File.Exists(browser), "No browser component is available on this machine.");
+        await RenderBrowser.RequireAsync();
 
         Directory.CreateDirectory(directory!);
 
@@ -45,7 +43,7 @@ public sealed class SampleReportTests
             {
                 ConfidentialityLabel = model.Profile.Branding.ConfidentialityLabel,
                 CustomerName = model.Metadata.CustomerName,
-                BrowserExecutablePath = browser,
+                BrowserExecutablePath = RenderBrowser.ExecutablePath,
             },
             CancellationToken.None);
 

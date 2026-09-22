@@ -47,8 +47,10 @@ credential redaction, and HTML injection in reports.
 ### Report rendering
 
 The PDF path is exercised against the real bundled browser and asserts a valid PDF is produced. The
-test skips when no browser component is present, so a machine without one still runs the rest of the
-suite; a provisioned build agent runs it.
+test skips when no browser can be started, so a machine without one still runs the rest of the
+suite. Where `CI` is set the environment is expected to provide a browser, so the same condition
+fails the test instead: a build that cannot render must not report success with no rendering
+coverage.
 
 Setting `IPA_SAMPLE_REPORT_DIR` writes a full sample report from a large synthetic data set, for the
 visual check below.

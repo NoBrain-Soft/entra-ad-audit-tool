@@ -39,8 +39,15 @@ jobs:
       - name: Install the browser used for report rendering
         shell: bash
         run: |
-          # The rendering tests exercise the real browser rather than skipping it.
-          pwsh tests/Ipa.Reporting.Tests/bin/Release/net10.0/playwright.ps1 install chromium --with-deps
+          # The rendering tests fail rather than skip when the browser is missing, so a failed
+          # install here cannot pass as a green build with no rendering coverage.
+          #
+          # Deliberately installed without --with-deps: that switch runs apt against every
+          # repository configured on the runner image, including a third-party one that has
+          # returned a hash mismatch and failed the whole job. The image already carries the
+          # libraries a headless browser needs, so the dependency step buys nothing and costs
+          # a dependency on somebody else's package index.
+          pwsh tests/Ipa.Reporting.Tests/bin/Release/net10.0/playwright.ps1 install chromium
 
       - name: Test
         run: >
@@ -78,7 +85,8 @@ jobs:
         run: dotnet build IdentityPostureAssessor.slnx --configuration Release
 
       - name: Install the browser
-        run: pwsh tests/Ipa.Reporting.Tests/bin/Release/net10.0/playwright.ps1 install chromium --with-deps
+        # Without --with-deps, for the reason given in the build job.
+        run: pwsh tests/Ipa.Reporting.Tests/bin/Release/net10.0/playwright.ps1 install chromium
 
       - name: Render
         env:
@@ -86,6 +94,14 @@ jobs:
         run: >
           dotnet test tests/Ipa.Reporting.Tests --configuration Release --no-build
           --filter SampleReportIsWrittenWhenRequested
+
+      - name: Confirm the sample was produced
+        shell: bash
+        run: |
+          # The render step is filtered down to a single test, so an empty result would otherwise
+          # be indistinguishable from a successful run.
+          test -s artifacts/sample-report/sample-report.pdf
+          test -s artifacts/sample-report/sample-report.html
 
       - name: Upload the sample for visual inspection
         uses: actions/upload-artifact@v4

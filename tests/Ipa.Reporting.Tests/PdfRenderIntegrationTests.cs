@@ -8,39 +8,12 @@ namespace Ipa.Reporting.Tests;
 /// starts, the print stylesheet applies, page numbering is produced and the output is a real PDF.
 /// </summary>
 /// <remarks>
-/// The test is skipped when no browser component is present, so a machine without it still runs the
-/// rest of the suite. The build and release pipeline provisions the browser, so the test runs there.
+/// The test is skipped when no browser component can be started, so a machine without one still
+/// runs the rest of the suite. A build agent provisions the browser deliberately, so there the
+/// same condition fails the test rather than skipping it: see <see cref="RenderBrowser"/>.
 /// </remarks>
 public sealed class PdfRenderIntegrationTests
 {
-    /// <summary>
-    /// Locates a browser executable: the explicit override first, then the well-known path a
-    /// provisioned build agent uses.
-    /// </summary>
-    private static string? BrowserPath
-    {
-        get
-        {
-            var configured = Environment.GetEnvironmentVariable(PdfRenderOptions.BrowserPathVariable);
-
-            if (!string.IsNullOrWhiteSpace(configured) && File.Exists(configured))
-            {
-                return configured;
-            }
-
-            var root = Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH");
-
-            if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root))
-            {
-                return null;
-            }
-
-            var candidate = Path.Combine(root, "chromium");
-
-            return File.Exists(candidate) ? candidate : null;
-        }
-    }
-
     private const string Document = """
         <!DOCTYPE html>
         <html lang="en"><head><meta charset="utf-8"><title>Render test</title>
@@ -58,8 +31,7 @@ public sealed class PdfRenderIntegrationTests
     [SkippableFact]
     public async Task DocumentRendersToAValidPdf()
     {
-        var browser = BrowserPath;
-        Skip.If(browser is null, "No browser component is available on this machine.");
+        await RenderBrowser.RequireAsync();
 
         await using var renderer = new PdfRenderer();
 
@@ -69,7 +41,7 @@ public sealed class PdfRenderIntegrationTests
             {
                 ConfidentialityLabel = "Confidential",
                 CustomerName = "Contoso",
-                BrowserExecutablePath = browser,
+                BrowserExecutablePath = RenderBrowser.ExecutablePath,
             },
             CancellationToken.None);
 
@@ -82,8 +54,7 @@ public sealed class PdfRenderIntegrationTests
     [SkippableFact]
     public async Task RenderedFileIsWrittenToDisk()
     {
-        var browser = BrowserPath;
-        Skip.If(browser is null, "No browser component is available on this machine.");
+        await RenderBrowser.RequireAsync();
 
         var path = Path.Combine(Path.GetTempPath(), $"ipa-render-{Guid.NewGuid():n}.pdf");
 
@@ -94,7 +65,7 @@ public sealed class PdfRenderIntegrationTests
             await renderer.RenderAsync(
                 Document,
                 path,
-                new PdfRenderOptions { BrowserExecutablePath = browser },
+                new PdfRenderOptions { BrowserExecutablePath = RenderBrowser.ExecutablePath },
                 CancellationToken.None);
 
             Assert.True(File.Exists(path));
