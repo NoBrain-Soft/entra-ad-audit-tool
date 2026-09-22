@@ -7,6 +7,7 @@ using Ipa.Contracts.Compliance;
 using Ipa.Contracts.Findings;
 using Ipa.Contracts.Reporting;
 using Ipa.Contracts.Rules;
+using Ipa.Contracts.Text;
 using Ipa.Reporting.Model;
 
 namespace Ipa.Reporting.Html;
@@ -476,7 +477,7 @@ public sealed class HtmlReportComposer
                 $"<tr><td class=\"mono\">{HtmlText.Escape(result.RuleId.Value)}</td>" +
                 $"<td>{HtmlText.Escape(finding.Title)}</td>" +
                 $"<td><span class=\"badge {finding.Severity.ToString().ToLowerInvariant()}\">" +
-                $"{HtmlText.Escape(result.Status.ToString())}</span></td>" +
+                $"{HtmlText.Escape(SplitCamelCase(result.Status.ToString()))}</span></td>" +
                 $"<td>{HtmlText.Escape(result.Rationale)}</td></tr>");
         }
 
@@ -786,26 +787,7 @@ public sealed class HtmlReportComposer
     }
 
     /// <summary>Inserts spaces into a camel-case identifier for display.</summary>
-    public static string SplitCamelCase(string value)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-
-        var builder = new StringBuilder(value.Length + 8);
-
-        for (var index = 0; index < value.Length; index++)
-        {
-            if (index > 0 && char.IsUpper(value[index]) && !char.IsUpper(value[index - 1]))
-            {
-                builder.Append(' ');
-                builder.Append(char.ToLowerInvariant(value[index]));
-                continue;
-            }
-
-            builder.Append(value[index]);
-        }
-
-        return builder.ToString();
-    }
+    public static string SplitCamelCase(string value) => DisplayText.Humanise(value);
 
     private static string DomainLabel(RuleDomain domain) => domain switch
     {

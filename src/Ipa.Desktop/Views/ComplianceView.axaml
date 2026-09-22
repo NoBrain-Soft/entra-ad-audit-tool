@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Ipa.Desktop.ViewModels"
+             xmlns:conv="using:Ipa.Desktop.Converters"
              x:Class="Ipa.Desktop.Views.ComplianceView"
              x:DataType="vm:ComplianceViewModel">
 
@@ -33,7 +34,7 @@
       </Border>
     </StackPanel>
 
-    <Grid ColumnDefinitions="*,400" MinHeight="420">
+    <Grid ColumnDefinitions="*,360" MinHeight="420">
 
       <Border Grid.Column="0" Classes="card" Margin="0,0,10,0">
         <StackPanel Spacing="8">
@@ -49,9 +50,9 @@
             <DataGrid.Columns>
               <DataGridTextColumn Header="Control" Binding="{Binding ControlId}" Width="90" />
               <DataGridTextColumn Header="Subject" Binding="{Binding Label}" Width="*" />
-              <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" />
-              <DataGridCheckBoxColumn Header="Confirmed" Binding="{Binding IsConfirmed}" Width="90" />
-              <DataGridTextColumn Header="Automated evidence" Binding="{Binding Suggested}" Width="190" />
+              <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="135" />
+              <DataGridCheckBoxColumn Header="Confirmed" Binding="{Binding IsConfirmed}" Width="105" />
+              <DataGridTextColumn Header="Automated evidence" Binding="{Binding Suggested}" Width="215" />
             </DataGrid.Columns>
           </DataGrid>
         </StackPanel>
@@ -73,7 +74,13 @@
 
               <TextBlock Classes="subheading" Text="Record your judgement" />
               <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding StatusToRecord}"
-                        HorizontalAlignment="Stretch" />
+                        HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding Converter={x:Static conv:EnumLabelConverter.Instance}}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
               <TextBox PlaceholderText="Notes" Text="{Binding ControlNotes}" AcceptsReturn="True"
                        Height="70" TextWrapping="Wrap" />
               <TextBlock Classes="muted"

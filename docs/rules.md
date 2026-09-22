@@ -18,7 +18,7 @@ A rule may declare a weight below its severity band, but never above it.
 
 ## Active Directory
 
-### Ad privileged access
+### AD privileged access
 
 | Rule | Title | Severity | Weight | ISO/IEC 27001:2022 |
 | --- | --- | --- | --- | --- |
@@ -30,7 +30,7 @@ A rule may declare a weight below its severity band, but never above it.
 | `AD-PRIV-006` | Tier-zero credentials are rotated | Medium | 3 | A.5.17 |
 | `AD-PRIV-007` | No accounts retain protected-account status after losing privilege | Low | 1 | A.5.18 |
 
-### Ad account hygiene
+### AD account hygiene
 
 | Rule | Title | Severity | Weight | ISO/IEC 27001:2022 |
 | --- | --- | --- | --- | --- |
@@ -42,7 +42,7 @@ A rule may declare a weight below its severity band, but never above it.
 | `AD-ACCT-006` | Computer accounts are in active use | Low | 1 | A.8.9 |
 | `AD-ACCT-007` | No domain-joined systems run an unsupported operating system | High | 6 | A.8.8 |
 
-### Ad delegation and acl
+### AD delegation and ACL
 
 | Rule | Title | Severity | Weight | ISO/IEC 27001:2022 |
 | --- | --- | --- | --- | --- |
@@ -52,7 +52,7 @@ A rule may declare a weight below its severity band, but never above it.
 | `AD-DELEG-004` | Tier-zero objects are not writable by non-privileged principals | Critical | 10 | A.8.3, A.8.2 |
 | `AD-DELEG-005` | The protected-account template has no unexpected delegation | High | 6 | A.8.2 |
 
-### Ad domain policy
+### AD domain policy
 
 | Rule | Title | Severity | Weight | ISO/IEC 27001:2022 |
 | --- | --- | --- | --- | --- |
@@ -66,7 +66,7 @@ A rule may declare a weight below its severity band, but never above it.
 | `AD-POL-008` | Domain functional level is current | Medium | 3 | A.8.8 |
 | `AD-POL-009` | The directory recycle bin is enabled | Low | 1 | A.8.13 |
 
-### Ad trusts and topology
+### AD trusts and topology
 
 | Rule | Title | Severity | Weight | ISO/IEC 27001:2022 |
 | --- | --- | --- | --- | --- |
@@ -76,7 +76,7 @@ A rule may declare a weight below its severity band, but never above it.
 | `AD-TRUST-001` | SID filtering is enabled on external and forest trusts | High | 6 | A.5.19, A.8.2 |
 | `AD-TRUST-002` | External trusts use selective authentication | Medium | 3 | A.5.19 |
 
-### Ad group policy
+### AD group policy
 
 | Rule | Title | Severity | Weight | ISO/IEC 27001:2022 |
 | --- | --- | --- | --- | --- |
@@ -90,7 +90,7 @@ A rule may declare a weight below its severity band, but never above it.
 | `AD-GPO-008` | SMB version one is disabled | High | 6 | A.8.8 |
 | `AD-GPO-009` | Sensitive privilege rights are restricted | Medium | 3 | A.8.2 |
 
-### Ad certificate services
+### AD certificate services
 
 | Rule | Title | Severity | Weight | ISO/IEC 27001:2022 |
 | --- | --- | --- | --- | --- |

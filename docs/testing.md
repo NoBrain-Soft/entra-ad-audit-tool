@@ -92,6 +92,27 @@ floated cover definition list that overlapped when a term wrapped, and a flexibl
 that stretched a trailing card across its own line. That is the exercise this criterion asks for,
 repeated per release and on both platforms.
 
+### Inspecting the interface
+
+The same exercise applies to the application itself, and needs no display server:
+
+```bash
+dotnet run --project tools/Ipa.UiCapture -- artifacts/ui
+```
+
+Every screen is rendered to PNG through Avalonia's headless platform with the real drawing
+backend, so the images show what the renderer actually produces rather than what the view models
+hold. It runs on either platform, which is what the equivalence criterion asks of the interface as
+well as of the report.
+
+This exists because an interface can pass every test it has and still be unusable. The first run
+found three defects that the suite had missed entirely: the welcome screen's only button did
+nothing, because the step it navigated to was locked until an assessment existed and that step is
+where an assessment is created; returning to the details step and continuing created a second
+assessment, discarding the open one; and the check-group selection never reached the session, so
+deselecting a group changed neither what was collected nor what was evaluated. Each is now covered
+by a test. Look at the images after any interface change.
+
 ## Regenerating the rule catalogue
 
 `docs/rules.md` is generated from the shipped pack by a test, which fails when it is stale:

@@ -33,7 +33,7 @@ public sealed partial class ControlRowViewModel : ObservableObject
     public string Theme => Definition.Theme;
 
     /// <summary>Current status.</summary>
-    public string Status => Assessment.Status.ToString();
+    public string Status => Contracts.Text.DisplayText.Humanise(Assessment.Status.ToString());
 
     /// <summary>The status the automated evidence suggests. Advisory only.</summary>
     public string Suggested => Assessment.Suggested switch

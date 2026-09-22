@@ -140,9 +140,21 @@ public sealed partial class AssessmentDetailsViewModel : ViewModelBase, IWorkflo
                 SelectedGroups = Enum.GetValues<CheckGroup>(),
             };
 
-            _workspace.CreateAssessment(metadata, scope);
+            if (_workspace.HasSession)
+            {
+                // Returning to this step to correct a detail must not start over: creating a
+                // second assessment would throw away the open one and everything collected.
+                _workspace.UpdateDetails(metadata, scope);
 
-            StatusMessage = "Assessment created. Nothing has been written to disk unencrypted.";
+                StatusMessage = "Details updated.";
+            }
+            else
+            {
+                _workspace.CreateAssessment(metadata, scope);
+
+                StatusMessage = "Assessment created. Nothing has been written to disk unencrypted.";
+            }
+
             _shell.UpdateStepAvailability();
             _shell.GoTo(WorkflowStep.Connections);
         }

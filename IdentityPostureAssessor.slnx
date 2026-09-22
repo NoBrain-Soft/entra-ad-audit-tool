@@ -11,6 +11,9 @@
     <Project Path="src/Ipa.Reporting/Ipa.Reporting.csproj" />
     <Project Path="src/Ipa.Rules/Ipa.Rules.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Ipa.UiCapture/Ipa.UiCapture.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Ipa.Collectors.Tests/Ipa.Collectors.Tests.csproj" />
     <Project Path="tests/Ipa.Compliance.Tests/Ipa.Compliance.Tests.csproj" />

@@ -125,7 +125,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             step.IsEnabled = step.Step switch
             {
                 WorkflowStep.Welcome => true,
-                WorkflowStep.Details => hasSession,
+
+                // The details step is where an assessment is created, so it has to be reachable
+                // before one exists. Gating it on a session made the welcome screen's only call
+                // to action do nothing at all.
+                WorkflowStep.Details => true,
                 WorkflowStep.Connections => hasSession,
                 WorkflowStep.Preflight => hasSession,
                 WorkflowStep.Scope => hasSession,

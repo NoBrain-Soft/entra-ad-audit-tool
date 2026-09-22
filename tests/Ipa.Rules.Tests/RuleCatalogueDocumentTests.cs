@@ -1,5 +1,6 @@
 using System.Text;
 using Ipa.Contracts.Rules;
+using Ipa.Contracts.Text;
 using Ipa.Rules.Engine;
 using Xunit;
 
@@ -80,7 +81,7 @@ public sealed class RuleCatalogueDocumentTests
                     .OrderBy(definition => definition.Id.Value, StringComparer.Ordinal)
                     .ToList();
 
-                builder.Append("### ").Append(SplitCamelCase(group.ToString())).Append("\n\n");
+                builder.Append("### ").Append(DisplayText.Humanise(group.ToString())).Append("\n\n");
                 builder.Append("| Rule | Title | Severity | Weight | ISO/IEC 27001:2022 |\n");
                 builder.Append("| --- | --- | --- | --- | --- |\n");
 
@@ -126,24 +127,6 @@ public sealed class RuleCatalogueDocumentTests
         RuleDomain.Hybrid => "Hybrid identity",
         _ => domain.ToString(),
     };
-
-    private static string SplitCamelCase(string value)
-    {
-        var builder = new StringBuilder(value.Length + 8);
-
-        for (var index = 0; index < value.Length; index++)
-        {
-            if (index > 0 && char.IsUpper(value[index]) && !char.IsUpper(value[index - 1]))
-            {
-                builder.Append(' ').Append(char.ToLowerInvariant(value[index]));
-                continue;
-            }
-
-            builder.Append(value[index]);
-        }
-
-        return builder.ToString();
-    }
 
     private static string RepositoryRoot()
     {

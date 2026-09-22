@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Ipa.UiCapture</RootNamespace>
+    <AssemblyName>Ipa.UiCapture</AssemblyName>
+    <Description>Renders the desktop screens to PNG through the headless platform.</Description>
+    <IsPackable>false</IsPackable>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Headless" />
+    <PackageReference Include="Avalonia.Skia" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Ipa.Desktop/Ipa.Desktop.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      The synthetic environment is shared with the rule tests rather than copied, so the screens
+      show the same fabricated forest and tenant the tests evaluate. It is linked instead of moved
+      because it belongs to the test fixtures.
+    -->
+    <Compile Include="../../tests/Ipa.Core.Tests/Fixtures/SyntheticEnvironment.cs"
+             Link="SyntheticEnvironment.cs" />
+  </ItemGroup>
+</Project>

@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Ipa.Contracts;
+using Ipa.Contracts.Assessment;
 using Ipa.Contracts.Compliance;
 using Ipa.Contracts.Reporting;
 using Ipa.Desktop.Services;
@@ -32,8 +33,12 @@ public sealed class WorkflowTests
             Assert.Equal(WorkflowStep.Welcome, shell.CurrentStep);
             Assert.IsType<WelcomeViewModel>(shell.Current);
 
+            // The details step is where an assessment is created, so it is reachable from the
+            // start. Everything after it needs the assessment that step produces.
+            Assert.True(shell.Steps.Single(step => step.Step == WorkflowStep.Details).IsEnabled);
+
             Assert.All(
-                shell.Steps.Where(step => step.Step != WorkflowStep.Welcome),
+                shell.Steps.Where(step => step.Step is not (WorkflowStep.Welcome or WorkflowStep.Details)),
                 step => Assert.False(step.IsEnabled));
         }
     });
@@ -591,6 +596,153 @@ public sealed class WorkflowTests
 
             // The report step is locked until an assessment has been evaluated.
             Assert.Equal(WorkflowStep.Welcome, shell.CurrentStep);
+        }
+    });
+
+    [Fact]
+    public void TheWelcomeScreensOwnCallToActionReachesTheDetailsStep() => HeadlessUi.Run(() =>
+    {
+        var shell = NewShell(out var workspace);
+
+        using (workspace)
+        {
+            // Every other test reaches the details step by driving its view model directly, which
+            // is why the one route an operator actually has went unnoticed when it stopped working.
+            shell.Welcome.StartNewAssessmentCommand.Execute(null);
+
+            Assert.Equal(WorkflowStep.Details, shell.CurrentStep);
+            Assert.IsType<AssessmentDetailsViewModel>(shell.Current);
+        }
+    });
+
+    [Fact]
+    public void ReturningToDetailsEditsTheAssessmentRatherThanReplacingIt() => HeadlessUi.Run(() =>
+    {
+        var shell = NewShell(out var workspace);
+
+        using (workspace)
+        {
+            shell.Details.CustomerName = "Contoso";
+            shell.Details.AssessorName = "Assessor";
+            shell.Details.ContinueCommand.Execute(null);
+
+            var original = workspace.Session!.AssessmentId;
+
+            shell.GoTo(WorkflowStep.Details);
+            shell.Details.CustomerName = "Contoso Pharmaceuticals";
+            shell.Details.ContinueCommand.Execute(null);
+
+            // Creating a second assessment here would silently discard the open one.
+            Assert.Equal(original, workspace.Session!.AssessmentId);
+            Assert.Equal("Contoso Pharmaceuticals", workspace.Session.Metadata.CustomerName);
+        }
+    });
+
+    [Fact]
+    public async Task ChangingTheSourcesAfterCollectingIsRefused()
+    {
+        // No view is involved, so this one runs off the interface thread.
+        using var workspace = new AssessmentWorkspace();
+
+        workspace.CreateAssessment(
+            new AssessmentMetadata { CustomerName = "Contoso", AssessorName = "Assessor" },
+            new AssessmentScope
+            {
+                IncludeActiveDirectory = true,
+                IncludeEntra = true,
+                SelectedGroups = Enum.GetValues<CheckGroup>(),
+            });
+
+        // An empty run still produces evidence, which is all the guard depends on.
+        await workspace.CollectAsync([], null, CancellationToken.None);
+
+        var refused = Assert.Throws<InvalidOperationException>(() => workspace.UpdateDetails(
+            workspace.Session!.Metadata,
+            new AssessmentScope { IncludeActiveDirectory = true, IncludeEntra = false }));
+
+        Assert.Contains("cannot be changed once collection has run", refused.Message, StringComparison.Ordinal);
+
+        // Metadata stays editable, because correcting a name contradicts nothing already collected.
+        workspace.UpdateDetails(
+            workspace.Session!.Metadata with { CustomerName = "Contoso AG" },
+            workspace.Session.Scope);
+
+        Assert.Equal("Contoso AG", workspace.Session!.Metadata.CustomerName);
+    }
+
+    [Fact]
+    public void TheCheckGroupSelectionReachesTheAssessment() => HeadlessUi.Run(() =>
+    {
+        var shell = NewShell(out var workspace);
+
+        using (workspace)
+        {
+            shell.Details.CustomerName = "Contoso";
+            shell.Details.AssessorName = "Assessor";
+            shell.Details.ContinueCommand.Execute(null);
+
+            shell.GoTo(WorkflowStep.Scope);
+
+            var dropped = shell.Scope.Groups.First(group => group.Group == CheckGroup.EntraSecureScore);
+            dropped.IsSelected = false;
+
+            shell.Scope.ContinueCommand.Execute(null);
+
+            // The collectors and the rule engine both read the selection from the session, so a
+            // selection that stays in the interface deselects nothing at all.
+            Assert.DoesNotContain(CheckGroup.EntraSecureScore, workspace.Session!.Scope.SelectedGroups);
+            Assert.Contains(CheckGroup.AdPrivilegedAccess, workspace.Session.Scope.SelectedGroups);
+        }
+    });
+
+    [Fact]
+    public void EmptyingTheCheckGroupSelectionIsRefused() => HeadlessUi.Run(() =>
+    {
+        var shell = NewShell(out var workspace);
+
+        using (workspace)
+        {
+            shell.Details.CustomerName = "Contoso";
+            shell.Details.AssessorName = "Assessor";
+            shell.Details.ContinueCommand.Execute(null);
+
+            shell.GoTo(WorkflowStep.Scope);
+            shell.Scope.SelectNoneCommand.Execute(null);
+            shell.Scope.ContinueCommand.Execute(null);
+
+            Assert.Equal(WorkflowStep.Scope, shell.CurrentStep);
+            Assert.NotEmpty(workspace.Session!.Scope.SelectedGroups);
+        }
+    });
+
+    [Fact]
+    public void NarrowingTheSourcesRebuildsTheOfferedCheckGroups() => HeadlessUi.Run(() =>
+    {
+        var shell = NewShell(out var workspace);
+
+        using (workspace)
+        {
+            shell.Details.CustomerName = "Contoso";
+            shell.Details.AssessorName = "Assessor";
+            shell.Details.ContinueCommand.Execute(null);
+
+            shell.GoTo(WorkflowStep.Scope);
+            Assert.Contains(shell.Scope.Groups, group => group.Group == CheckGroup.EntraConditionalAccess);
+
+            var kept = shell.Scope.Groups.First(group => group.Group == CheckGroup.AdCertificateServices);
+            kept.IsSelected = false;
+
+            shell.GoTo(WorkflowStep.Details);
+            shell.Details.IncludeEntra = false;
+            shell.Details.ContinueCommand.Execute(null);
+
+            shell.GoTo(WorkflowStep.Scope);
+
+            // Groups belonging to a source that is no longer assessed are withdrawn, and a group
+            // the operator had already turned off stays off.
+            Assert.DoesNotContain(shell.Scope.Groups, group => group.Group == CheckGroup.EntraConditionalAccess);
+            Assert.False(
+                shell.Scope.Groups.First(group => group.Group == CheckGroup.AdCertificateServices).IsSelected);
         }
     });
 }

@@ -30,8 +30,11 @@
         <ItemsControl ItemsSource="{Binding Collectors}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:CollectorProgressViewModel">
-              <Grid ColumnDefinitions="240,*,120,Auto" Margin="0,4">
-                <TextBlock Grid.Column="0" Text="{Binding DisplayName}" VerticalAlignment="Center" />
+              <Grid ColumnDefinitions="300,*,120,Auto" Margin="0,4">
+                <!-- Wrapping rather than clipping: a collector's name is how the operator knows
+                     which source a failure belongs to. -->
+                <TextBlock Grid.Column="0" Text="{Binding DisplayName}" VerticalAlignment="Center"
+                           TextWrapping="Wrap" Margin="0,0,12,0" />
                 <StackPanel Grid.Column="1" Margin="8,0">
                   <TextBlock Text="{Binding Activity}" FontSize="12" TextTrimming="CharacterEllipsis" />
                   <ProgressBar Value="{Binding Fraction}" Maximum="1" Height="5" Margin="0,3,0,0" />

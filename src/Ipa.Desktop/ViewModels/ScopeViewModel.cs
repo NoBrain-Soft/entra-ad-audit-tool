@@ -67,16 +67,35 @@ public sealed partial class ScopeViewModel : ViewModelBase, IWorkflowStepViewMod
     [ObservableProperty]
     private int _selectedRuleCount;
 
+    /// <summary>The sources the offered list was built for, so a scope change rebuilds it.</summary>
+    private (bool ActiveDirectory, bool Entra)? _builtFor;
+
     /// <inheritdoc />
     public void OnEntered()
     {
-        if (Groups.Count > 0)
+        var session = _workspace.Session;
+
+        var sources = (
+            ActiveDirectory: session?.Scope.IncludeActiveDirectory ?? true,
+            Entra: session?.Scope.IncludeEntra ?? true);
+
+        // The operator can go back to the details step and change which sources are in scope, so
+        // the offered groups are rebuilt when that happens rather than left describing the
+        // previous selection.
+        if (Groups.Count > 0 && _builtFor == sources)
         {
             return;
         }
 
+        var deselected = Groups
+            .Where(entry => !entry.IsSelected)
+            .Select(entry => entry.Group)
+            .ToHashSet();
+
+        Groups.Clear();
+        _builtFor = sources;
+
         var definitions = FirstPartyRulePack.Current.Definitions;
-        var session = _workspace.Session;
 
         foreach (var group in Enum.GetValues<CheckGroup>())
         {
@@ -92,9 +111,9 @@ public sealed partial class ScopeViewModel : ViewModelBase, IWorkflowStepViewMod
 
             var inScope = domain switch
             {
-                Contracts.Rules.RuleDomain.ActiveDirectory => session?.Scope.IncludeActiveDirectory ?? true,
-                Contracts.Rules.RuleDomain.Entra => session?.Scope.IncludeEntra ?? true,
-                Contracts.Rules.RuleDomain.Hybrid => session?.Scope.IncludeHybrid ?? true,
+                Contracts.Rules.RuleDomain.ActiveDirectory => sources.ActiveDirectory,
+                Contracts.Rules.RuleDomain.Entra => sources.Entra,
+                Contracts.Rules.RuleDomain.Hybrid => sources.ActiveDirectory && sources.Entra,
                 _ => true,
             };
 
@@ -109,7 +128,11 @@ public sealed partial class ScopeViewModel : ViewModelBase, IWorkflowStepViewMod
                 group,
                 Reporting.Html.HtmlReportComposer.SplitCamelCase(group.ToString()),
                 applicable.Count,
-                permissions.Length == 0 ? "Directory protocol access only" : permissions));
+                permissions.Length == 0 ? "Directory protocol access only" : permissions)
+            {
+                // A group the operator had already turned off stays off across a rebuild.
+                IsSelected = !deselected.Contains(group),
+            });
         }
 
         foreach (var entry in Groups)
@@ -151,6 +174,18 @@ public sealed partial class ScopeViewModel : ViewModelBase, IWorkflowStepViewMod
         if (selected.Count == 0)
         {
             ErrorMessage = "Select at least one check group.";
+            return;
+        }
+
+        try
+        {
+            // The selection has to be written to the assessment. Held only here it would have no
+            // effect: the collectors and the rule engine both read it from the session's scope.
+            _workspace.UpdateSelectedGroups(selected);
+        }
+        catch (Exception ex)
+        {
+            ReportFailure("The check-group selection could not be applied", ex);
             return;
         }
 

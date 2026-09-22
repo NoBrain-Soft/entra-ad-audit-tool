@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Ipa.Desktop.ViewModels"
+             xmlns:conv="using:Ipa.Desktop.Converters"
              x:Class="Ipa.Desktop.Views.FindingsView"
              x:DataType="vm:FindingsViewModel">
 
@@ -57,8 +58,9 @@
               <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="100" />
               <DataGridTextColumn Header="Rule" Binding="{Binding RuleId.Value}" Width="130" />
               <DataGridTextColumn Header="Finding" Binding="{Binding Title}" Width="*" />
-              <DataGridTextColumn Header="Objects" Binding="{Binding AffectedObjects.Count}" Width="80" />
-              <DataGridTextColumn Header="Disposition" Binding="{Binding Disposition}" Width="120" />
+              <DataGridTextColumn Header="Objects" Binding="{Binding AffectedObjects.Count}" Width="90" />
+              <DataGridTextColumn Header="Disposition" Width="145"
+                                  Binding="{Binding Disposition, Converter={x:Static conv:EnumLabelConverter.Instance}}" />
             </DataGrid.Columns>
           </DataGrid>
         </StackPanel>
@@ -87,7 +89,13 @@
 
               <TextBlock Classes="subheading" Text="Assessor disposition" />
               <ComboBox ItemsSource="{Binding Dispositions}" SelectedItem="{Binding SelectedDisposition}"
-                        HorizontalAlignment="Stretch" />
+                        HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding Converter={x:Static conv:EnumLabelConverter.Instance}}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
               <TextBox PlaceholderText="Justification (required for any disposition)"
                        Text="{Binding Justification}" AcceptsReturn="True" Height="70" TextWrapping="Wrap" />
               <TextBox PlaceholderText="Assessor notes" Text="{Binding OperatorNotes}"

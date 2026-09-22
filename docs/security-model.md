@@ -98,3 +98,9 @@ name. It never records the stored value, and a test asserts the value does not a
 
 None. No assessment content leaves the machine. An optional update check may retrieve a signed
 release manifest and nothing else; version one installs updates through signed application releases.
+
+The build has its own telemetry to answer for: the interface toolkit reports build-time usage to
+its vendor unless `AVALONIA_TELEMETRY_OPTOUT=1` is set. Nothing about an assessment is involved,
+but a product that promises to upload nothing should not have its own build reporting to a third
+party, so the pipeline sets the variable and a developer building locally should set it too. This
+is the only outbound call any part of the repository makes that is not a package restore.

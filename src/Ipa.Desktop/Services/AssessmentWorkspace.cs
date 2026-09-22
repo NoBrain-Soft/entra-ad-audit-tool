@@ -70,6 +70,74 @@ public sealed class AssessmentWorkspace : IDisposable
         return session;
     }
 
+    /// <summary>
+    /// Applies edited details to the open assessment, rather than replacing it.
+    /// </summary>
+    /// <remarks>
+    /// Metadata can be corrected at any point in the workflow. The identity sources cannot, once
+    /// anything has been collected: evidence already gathered would contradict a scope saying the
+    /// source was never assessed, and the report would state both. The operator's check-group
+    /// selection is left alone, so correcting a customer name does not silently reset the scope.
+    /// </remarks>
+    public AssessmentSession UpdateDetails(AssessmentMetadata metadata, AssessmentScope scope)
+    {
+        ArgumentNullException.ThrowIfNull(metadata);
+        ArgumentNullException.ThrowIfNull(scope);
+
+        var session = RequireSession();
+
+        var sourcesChanged =
+            session.Scope.IncludeActiveDirectory != scope.IncludeActiveDirectory
+            || session.Scope.IncludeEntra != scope.IncludeEntra;
+
+        if (sourcesChanged && !session.IsEmpty)
+        {
+            throw new InvalidOperationException(
+                "The identity sources cannot be changed once collection has run. Start a new " +
+                "assessment to assess a different set of sources.");
+        }
+
+        Session = session with
+        {
+            Metadata = metadata,
+            Scope = session.Scope with
+            {
+                IncludeActiveDirectory = scope.IncludeActiveDirectory,
+                IncludeEntra = scope.IncludeEntra,
+            },
+        };
+
+        Persist();
+
+        return Session;
+    }
+
+    /// <summary>
+    /// Applies the operator's check-group selection to the open assessment.
+    /// </summary>
+    /// <remarks>
+    /// The selection decides both what the collectors ask for and which rules are evaluated, and
+    /// a deselected group is what makes its rules report as not collected and lowers coverage.
+    /// It therefore has to reach the session: left in the interface it changes nothing.
+    /// </remarks>
+    public AssessmentSession UpdateSelectedGroups(IReadOnlyCollection<CheckGroup> groups)
+    {
+        ArgumentNullException.ThrowIfNull(groups);
+
+        if (groups.Count == 0)
+        {
+            throw new ArgumentException("At least one check group must be selected.", nameof(groups));
+        }
+
+        var session = RequireSession();
+
+        Session = session with { Scope = session.Scope with { SelectedGroups = [.. groups] } };
+
+        Persist();
+
+        return Session;
+    }
+
     /// <summary>Runs collection for the open assessment.</summary>
     public async Task CollectAsync(
         IReadOnlyList<CollectionStage> stages,

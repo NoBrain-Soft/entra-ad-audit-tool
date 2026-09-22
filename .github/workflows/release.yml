@@ -11,6 +11,9 @@ on:
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  # The interface toolkit sends build-time usage data to its vendor unless this is set. A product
+  # that promises to upload nothing should not have its own build reporting to a third party.
+  AVALONIA_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
   CI: true
 
